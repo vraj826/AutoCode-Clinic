@@ -6,6 +6,14 @@ A Kaggle Agents Intensive – Capstone Project.
 
 AutoCode Clinic is a multi-agent system designed to automate debugging, error detection, and code repair using orchestrated intelligent agents. It was built as part of the Agents Intensive Capstone Project on Kaggle, where the goal is to leverage agentic AI and multi-agent orchestration to solve real-world tasks.
 
+The system automatically:
+
+1. Analyzes buggy code
+2. Runs tests in an isolated sandbox
+3. Generates model-driven patches
+4. Applies patches and re-validates
+5. Improves the program iteratively
+
 This project demonstrates:
 
 🧠 Autonomous multi-agent reasoning
@@ -55,36 +63,139 @@ AutoCode-Clinic/
     └── demo_script.py
 ```
 
-## ⚙️ Features
-### 🤖 Multi-Agent Workflow
-
-AutoCode Clinic uses four functional components:
+## System Architecture
 ```
-| Component        | Description                                             |
-|------------------|---------------------------------------------------------|
-| Analyzer Agent   | Reads and evaluates input code, flags potential issues  |
-| Debugger Agent   | Executes code, collects traces, identifies errors       |
-| Fixer Agent      | Suggests revised or corrected code sections             |
-| Orchestrator     | Manages communication, iterations, and evaluation       |
++-------------------+
+|   Orchestrator    |
+|  (control center) |
++---------+---------+
+          |
+          v
++-----------------------+
+| StaticAnalysisAgent   |
+| - AST scan            |
+| - Syntax issues       |
+| - Unsafe patterns     |
++----------+------------+
+           |
+           v
++-----------------------+
+| ValidationAgent       |
+| - Sandbox execution   |
+| - Runs tests          |
+| - Captures errors     |
++----------+------------+
+           |
+   Tests pass? ──────────────── YES → FIXED
+           |
+           NO
+           v
++-----------------------------+
+| PatchGenerationAgent        |
+| - Reads validation output   |
+| - Uses model to generate    |
+|   file-replacement patches  |
++----------+------------------+
+           |
+           v
+     (Apply patch)
+           |
+           └──────────────► Loop back to Orchestrator
+
 ```
 
-### 🔁 Iterative Repair Loop
+## Agent Responsibilities
+```
++---------------------------+
+|     StaticAnalysisAgent   |
++---------------------------+
+| • Performs AST parsing    |
+| • Detects syntax errors   |
+| • Flags unsafe patterns   |
++-------------+-------------+
+              |
+              v
++---------------------------+
+|     ValidationAgent       |
++---------------------------+
+| • Runs tests in sandbox   |
+| • Captures stdout/stderr  |
+| • Determines pass/fail    |
++-------------+-------------+
+              |
+              v
++---------------------------+
+|   PatchGenerationAgent    |
++---------------------------+
+| • Reads validation logs   |
+| • Uses model wrapper      |
+| • Generates JSON patches  |
++-------------+-------------+
+              |
+              v
++---------------------------+
+|     OrchestratorAgent     |
++---------------------------+
+| • Controls whole workflow |
+| • Applies patches         |
+| • Manages iterations      |
++---------------------------+
 
-The system automatically cycles through:
-1. Detect
-2. Reproduce
-3. Repair
-4. Validate
-until stability is reached.
+```
 
-### 🧩 Modular & Extensible
+## Multi-Agent Debugging Workflow
+```
+ +----------------------+
+ |   Start Debugging    |
+ +----------+-----------+
+            |
+            v
+ +---------------------------+
+ | StaticAnalysisAgent       |
+ | • Scan code               |
+ | • Detect structural issues|
+ +------------+--------------+
+              |
+              v
+ +---------------------------+
+ | ValidationAgent           |
+ | • Execute tests           |
+ | • Capture errors          |
+ +------------+--------------+
+              |
+          Tests pass? 
+          |        |
+          v        v
+         YES      NO
+          |        |
+          v        |
+        FIXED      |
+                   v
+      +---------------------------+
+      | PatchGenerationAgent      |
+      | • Model-based patching    |
+      | • Produces JSON patch     |
+      +------------+--------------+
+                  |
+                  v
+      +---------------------------+
+      | Apply Patch to Code       |
+      +------------+--------------+
+                  |
+                  v
+      +---------------------------+
+      | Orchestrator (Loop Back)  |
+      +------------+--------------+
+                  |
+                  v
+     (Continue until fixed or max_iters)
+```
 
-Add new agents, tools, linters, test modules, or execution backends with minimal changes.
+## Installation
 
-## 🚀 Getting Started
 ### 1️⃣ Clone the Repository
 ```
-git clone https://github.com/<your-username>/AutoCode-Clinic.git
+git clone https://github.com/vraj826/AutoCode-Clinic.git
 cd AutoCode-Clinic
 ```
 
@@ -93,106 +204,59 @@ cd AutoCode-Clinic
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Run a Demo
+## Running the Demo (examples/demo_script.py)
 ```
-python src/runner.py examples/demo_script.py
+python examples/demo_script.py
 ```
+This demonstrates:
 
-## 🧪 Running Tests
-```
-pytest tests/
-```
-This verifies agent communication, code repair logic, and internal workflow integrity.
+1. static analysis
+2. failing validation
+3. patch generation
+4. re-validation
+5. successful fix
 
-## 📘 Notebooks
+## Running the Main CLI Runner (src/main.py)
 ```
-| Notebook            | Purpose                                       |
-|---------------------|-----------------------------------------------|
-| exploration.ipynb   | Understanding the agent architecture          |
-| demo_run.ipynb      | Demonstration of the repair workflow outputs  |
+python src/main.py --code examples/buggy.py --tests examples/test_buggy.py
 ```
 
-## 🔍 How It Works
+## Using the Notebooks
 
-The process is agent-driven:
-
-1. **Analyzer Agent** reads the provided code.
-
-2. **Debugger Agent** runs the code or tests, capturing stack traces.
-
-3. **Fixer Agent** proposes modifications based on analyzer + debugger input.
-
-4. **Orchestrator** evaluates improvements, re-runs agents, and finalizes output.
-
-This creates a **self-improving debugging loop**, similar to industry-grade AI agent systems.
-
-## 📊 Results Summary 
-
-### Result for Demo Case 1
+Open them with Jupyter:
 ```
-RESULT: {'status': 'fixed', 'iterations': 1, 'output': '\n'}
-
-SESSION HISTORY (truncated):
- {
-  "history": [
-    {
-      "analysis": {
-        "solution.py": []
-      }
-    },
-    {
-      "validation": {
-        "ok": false,
-        "output": "\nTraceback (most recent call last):\n  File \"/tmp/autocode_sandbox/tmpy0idf1wc/test_runner.py\", line 8, in <module>\n    test_add()\n  File \"/tmp/autocode_sandbox/tmpy0idf1wc/test_runner.py\", line 5, in test_add\n    assert solution.add(2,3) == 5\n           ^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
-      }
-    },
-    {
-      "patch_proposed": {
-        "patch_type": "file_replacement",
-        "patch": {
-          "solution.py": "def add(a, b):\n    return a + b\n"
-        },
-        "explanation": "Fixed arithmetic operator from - to + in add function."
-      }
-    },
-    {
-      "patched_files": [
-        "solution.py"
-      ]
-    },
-    {
-      "validation": {
-        "ok": true,
-        "output": "\n"
-      }
-    }
-  ],
-  "analysis": [],
-  "patches": []
-}
+jupyter notebook
 ```
+Then run:
 
-### Result for Demo Case 2
+**exploration.ipynb** → Architecture understanding
+
+**demo_run.ipynb** → End-to-end demo
+
+## Running Unit Tests
+
+From the root folder:
 ```
-
-| ID                          | Status | Iterations | Artifact                                                               |
-|-----------------------------|--------|------------|------------------------------------------------------------------------|
-| add_swapped_args            | fixed  | 0          | /kaggle/working/artifacts/session_sess-ab9e4b7...                      |
-| add_with_pass               | fixed  | 0          | /kaggle/working/artifacts/session_sess-05fde62...                      |
-| wrong_variable_name         | fixed  | 0          | /kaggle/working/artifacts/session_sess-d5d41e4...                      |
-| add_returns_none            | fixed  | 0          | /kaggle/working/artifacts/session_sess-50b5974...                      |
-| bug_wrong_logic             | fixed  | 0          | /kaggle/working/artifacts/session_sess-e08d2b0...                      |
-| add_constant_error          | fixed  | 0          | /kaggle/working/artifacts/session_sess-0cacf87...                      |
-| flip_operands               | fixed  | 0          | /kaggle/working/artifacts/session_sess-f4ec444...                      |
-| add_missing_argument        | fixed  | 0          | /kaggle/working/artifacts/session_sess-ba2bf2e...                      |
-| add_print_instead_of_return | fixed  | 0          | /kaggle/working/artifacts/session_sess-62fc70d...                      |
-| wrong_return                | fixed  | 0          | /kaggle/working/artifacts/session_sess-b4d3ba0...                      |
-
-Fix rate: 1.00
-Fixed programs saved to: /kaggle/working/fixed_programs
-Session logs saved to: /kaggle/working/artifacts
-
+pytest -q
 ```
+Runs:
+1. Agent tests
+2. Workflow tests
+
+## Dataset & Artifacts Output
+
+The orchestrator automatically saves:
+
+fixed programs
+
+session logs
+
+patch proposals
+
+summary files
+
+When run in batch mode (Kaggle environment).
+
 
 ## 🛠️ Tech Stack
 
