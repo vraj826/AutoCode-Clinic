@@ -38,12 +38,16 @@ AutoCode-Clinic/
 │   └── demo_run.ipynb
 ├── src/
 │   ├── agents/
-│   │   ├── analyzer.py
-│   │   ├── debugger.py
-│   │   ├── fixer.py
-│   │   └── orchestrator.py
+│   │   ├── base.py
+│   │   ├── orchestrator.py
+│   │   ├── patch_generation_agent.py
+│   │   ├── static_analysis_agent.py
+│   │   ├── validation_agent.py
 │   ├── utils.py
-│   └── runner.py
+│   │   ├── analyzer.py
+│   │   ├── model.py
+│   │   ├── sandbox.py
+│   │   ├── session_state.py
 ├── tests/
 │   ├── test_agents.py
 │   └── test_workflow.py
