@@ -56,11 +56,14 @@ AutoCode-Clinic/
 │   │   ├── model.py
 │   │   ├── sandbox.py
 │   │   ├── session_state.py
+│   ├── main.py
 ├── tests/
 │   ├── test_agents.py
 │   └── test_workflow.py
 └── examples/
-    └── demo_script.py
+    ├── demo_script.py
+    ├── buggy.py
+    └── test_buggy.py
 ```
 
 ## System Architecture
